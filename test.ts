@@ -491,8 +491,10 @@ console.log(User.getTotalUsers()); // Output: 2
 
 // soal 19
 class ValidationError extends Error {
-  constructor(public fieldName: string) {
-    super(fieldName);
+  constructor(public email: string) {
+    super(`${email} is not a valid email`);
+    Object.setPrototypeOf(this, ValidationError.prototype);
+    this.name = "ValidationError";
   }
 }
 
@@ -502,10 +504,9 @@ class Userr {
     public statusEmail: string,
   ) {}
   validate() {
-    const input = document.createElement("input");
-    input.type = "email";
-    input.value = this.statusEmail;
-    if (!input.checkValidity()) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(this.statusEmail);
+    if (!isValid) {
       throw new ValidationError(this.statusEmail);
     }
   }
@@ -516,7 +517,7 @@ try {
   user.validate();
 } catch (e) {
   if (e instanceof ValidationError) {
-    console.log(`Error: ${e.fieldName} is invalid - ${e.message}`);
+    console.log(`Error: email is ${e.email} - Email format is not valid`);
     // Output: Error: email is invalid - Email format is not valid
   }
 }
@@ -525,8 +526,262 @@ try {
   const user = new Userr("bob", "bob@example.com");
   user.validate();
   console.log("User is valid"); // Output: User is valid
-} catch (e) {
-  // No error
-}
+} catch (e) {}
 
 // soal 20
+class Personn {
+  constructor(public name: string) {}
+  getName() {
+    return `Hello, ${this.name}`;
+  }
+}
+
+class Robot {
+  constructor(public name: string) {}
+  getName() {
+    return `Hello, ${this.name}`;
+  }
+}
+
+function greetSomeone(entity: { name: string; getName(): string }) {
+  if (entity instanceof Personn) {
+    return entity.getName();
+  } else if (entity instanceof Robot) {
+    return entity.getName();
+  }
+}
+
+const personn = new Personn("Alice");
+const robot = new Robot("R2D2");
+
+console.log(greetSomeone(personn)); // Output: Hello, Alice
+console.log(greetSomeone(robot)); // Output: Hello, R2D2
+
+// soal 21
+class Temperature {
+  private _celcius: number = 0;
+  constructor(celcius: number) {
+    this.celcius = celcius;
+  }
+
+  get celcius(): number {
+    return this._celcius;
+  }
+
+  set celcius(celcius: number) {
+    if (celcius <= -273.15) {
+      throw new Error("Temperature cannot be below absolute zero (-273.15°C)");
+    }
+    this._celcius = celcius;
+  }
+
+  get fahrenheit(): number {
+    return (this._celcius * 9) / 5 + 32;
+  }
+
+  set fahrenheit(fahrenheit: number) {
+    if (fahrenheit <= -459.67) {
+      throw new Error("Temperature cannot be below absolute zero (-459.67°F)");
+    }
+    this._celcius = ((fahrenheit - 32) * 5) / 9;
+  }
+}
+
+const temp = new Temperature(0);
+console.log(temp.celcius); // Output: 0
+console.log(temp.fahrenheit); // Output: 32
+
+temp.celcius = 100;
+console.log(temp.fahrenheit); // Output: 212
+
+try {
+  temp.celcius = -300; // Akan throw error
+} catch (e: any) {
+  console.error(e.message); // Output: Temperature cannot be below absolute zero
+}
+
+// soal 22
+class Vehicleee {
+  constructor(
+    public vehicle: string,
+    public model: string,
+    public battery: string,
+  ) {}
+  getDetails(): string {
+    return `Vehicle: ${this.vehicle}, Type: ${LandVehicle.name}, Model: ${this.model}, Battery: ${this.battery} kWh`;
+  }
+}
+
+class LandVehicle extends Vehicleee {
+  constructor(vehicle: string, model: string, battery: string) {
+    super(vehicle, model, battery);
+  }
+  getDetails(): string {
+    return super.getDetails();
+  }
+}
+
+class Carrr extends LandVehicle {
+  constructor(vehicle: string, model: string, battery: string) {
+    super(vehicle, model, battery);
+  }
+  getDetails(): string {
+    return super.getDetails();
+  }
+}
+
+class ElectricCar extends Carrr {
+  constructor(vehicle: string, model: string, battery: string) {
+    super(vehicle, model, battery);
+  }
+  getDetails(): string {
+    return super.getDetails();
+  }
+}
+
+const eCar = new ElectricCar("Tesla", "S", "50 kWh");
+console.log(eCar.getDetails());
+// Output: Vehicle: Tesla, Type: LandVehicle, Model: S, Battery: 50 kWh
+
+// soal 23
+interface Taxable {
+  calculateTax(): number;
+}
+
+class Employeess implements Taxable {
+  constructor(
+    public name: string,
+    public income: number,
+  ) {}
+  calculateTax(): number {
+    return this.income * 0.1;
+  }
+}
+
+class Freelancer implements Taxable {
+  constructor(
+    public name: string,
+    public income: number,
+  ) {}
+  calculateTax(): number {
+    return this.income * 0.15;
+  }
+}
+
+class Corporation implements Taxable {
+  constructor(
+    public name: string,
+    public income: number,
+  ) {}
+  calculateTax(): number {
+    return this.income * 0.25;
+  }
+}
+
+function calculateTotalTax(entities: Taxable[]): number {
+  let total_tax = 0;
+  for (let i = 0; i < entities.length; i++) {
+    total_tax += entities[i].calculateTax();
+  }
+  return total_tax;
+}
+
+const entities: Taxable[] = [
+  new Employeess("Alice", 100000000), // Tax: 10%
+  new Freelancer("Bob", 50000000), // Tax: 15%
+  new Corporation("PT Tech", 500000000), // Tax: 25%
+];
+
+console.log(calculateTotalTax(entities));
+// Output: 142500000 (10M + 7.5M + 125M)
+
+// soal 24
+abstract class DataProcessor {
+  abstract parse(): void;
+  abstract transform(): void;
+  abstract validate(): void;
+  process(): void {
+    (this.parse, this.transform, this.validate);
+  }
+}
+
+class CSVProcessor extends DataProcessor {
+  parse(): void {
+    console.log("Parsing CSV file...");
+  }
+  transform(): void {
+    console.log("Transforming CSV data...");
+  }
+  validate(): void {
+    console.log("Validating CSV data...");
+  }
+  process(): void {
+    (this.parse(), this.transform(), this.validate());
+  }
+}
+
+class JSONProcessor extends DataProcessor {
+  parse(): void {
+    console.log("Parsing JSON file...");
+  }
+  transform(): void {
+    console.log("Transforming JSON data...");
+  }
+  validate(): void {
+    console.log("Validating JSON data...");
+  }
+  process(): void {
+    (this.parse(), this.transform(), this.validate());
+  }
+}
+
+const csvProcessor = new CSVProcessor();
+csvProcessor.process();
+// Output:
+// Parsing CSV file...
+// Transforming CSV data...
+// Validating CSV data...
+
+const jsonProcessor = new JSONProcessor();
+jsonProcessor.process();
+// Output:
+// Parsing JSON file...
+// Transforming JSON data...
+// Validating JSON data...
+
+// soal 25
+abstract class Repository {
+  protected validateId(id: number): boolean {
+    if (id > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  abstract getById(id: number): object;
+  find(id: number): object | null{
+    return {}
+  }
+}
+
+class UserRepository extends Repository {
+  protected validateId(id: number): boolean {
+    
+  }
+  getById(id: number): object {
+    
+  }
+  find(id: number): object | null {
+    
+  }
+}
+
+const repo = new UserRepository();
+
+const user = repo.find(1);
+console.log(user);  // Output: { id: 1, name: "User1" }
+
+const invalid = repo.find(-1);
+console.log(invalid);  // Output: null
+
+// repo.validateId(1); // Error: validateId is protected
