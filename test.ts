@@ -125,19 +125,19 @@ console.log(manager.teamSize); // Output: 5
 
 // soal 6
 class Rectangle {
-  #width!: number;
-  #height!: number;
+  private _width!: number;
+  private _height!: number;
 
   constructor(width: number, height: number) {
     this.setDimensions(width, height);
   }
 
   setDimensions(width: number, height: number) {
-    this.#width = width;
-    this.#height = height;
+    this._width = width;
+    this._height = height;
   }
   get area(): number {
-    return this.#height * this.#width;
+    return this._height * this._width;
   }
 }
 
@@ -222,19 +222,19 @@ identifyShape(square); // Output: This is a Square
 
 // soal 11
 class BankAccountt {
-  #accountNumber: string;
-  #balance: number;
+  private _accountNumber: string;
+  private _balance: number;
   accountHolder: string;
   constructor(accountHolder: string, accountNumber: string, balance: number) {
     this.accountHolder = accountHolder;
-    this.#accountNumber = accountNumber;
-    this.#balance = balance;
+    this._accountNumber = accountNumber;
+    this._balance = balance;
   }
   withdraw(amount: number) {
-    this.#balance += amount;
+    this._balance += amount;
   }
   getBalance() {
-    return this.#balance;
+    return this._balance;
   }
 }
 
@@ -608,7 +608,7 @@ class Vehicleee {
     public battery: string,
   ) {}
   getDetails(): string {
-    return `Vehicle: ${this.vehicle}, Type: ${LandVehicle.name}, Model: ${this.model}, Battery: ${this.battery} kWh`;
+    return `Vehicle: ${this.vehicle}, Type: LandVehicle, Model: ${this.model}, Battery: ${this.battery} kWh`;
   }
 }
 
@@ -680,8 +680,10 @@ class Corporation implements Taxable {
 
 function calculateTotalTax(entities: Taxable[]): number {
   let total_tax = 0;
-  for (let i = 0; i < entities.length; i++) {
-    total_tax += entities[i].calculateTax();
+  if (entities !== undefined) {
+    for (let i = 0; i < entities.length; i++) {
+      total_tax += entities[i]!.calculateTax();
+    }
   }
   return total_tax;
 }
@@ -752,36 +754,145 @@ jsonProcessor.process();
 // soal 25
 abstract class Repository {
   protected validateId(id: number): boolean {
-    if (id > 0) {
-      return true;
-    } else {
-      return false;
-    }
+    return id > 0 ? true : false;
   }
   abstract getById(id: number): object;
-  find(id: number): object | null{
-    return {}
+  find(id: number): object | null {
+    if (this.validateId(id)) {
+      return this.getById(id);
+    } else {
+      return null;
+    }
   }
 }
 
 class UserRepository extends Repository {
   protected validateId(id: number): boolean {
-    
+    return id > 0 ? true : false;
   }
   getById(id: number): object {
-    
+    return {
+      id,
+      name: "User1",
+    };
   }
   find(id: number): object | null {
-    
+    if (this.validateId(id)) {
+      return this.getById(id);
+    } else {
+      return null;
+    }
   }
 }
 
 const repo = new UserRepository();
 
 const user = repo.find(1);
-console.log(user);  // Output: { id: 1, name: "User1" }
+console.log(user); // Output: { id: 1, name: "User1" }
 
 const invalid = repo.find(-1);
-console.log(invalid);  // Output: null
+console.log(invalid); // Output: null
 
 // repo.validateId(1); // Error: validateId is protected
+
+// soal 26
+// class Shapees{
+//   static create(type: string, ...args): number{
+//     return 0;
+//     getArea(){
+//       return 0;
+//     }
+//   }
+
+// }
+
+// const circles = Shapees.create("circle", 10);
+// console.log(circles.getArea());  // Output: 314.16 (atau ~314)
+
+// const squares = Shapees.create("square", 5);
+// console.log(squares.getArea());  // Output: 25
+
+// const triangles = Shapees.create("triangle", 10, 8);
+// console.log(triangles.getArea()); // Output: 40
+
+// soal 27
+namespace Models {
+  export class User {
+    constructor(
+      public name: string,
+      public email: string,
+    ) {}
+  }
+
+  export class Product {
+    constructor(
+      public name: string,
+      public price: number,
+    ) {}
+  }
+}
+
+namespace Services {
+  export class UserServices {
+    registerUser(value: Models.User) {}
+    getUser(id: number): object {
+      return {};
+    }
+  }
+
+  export class ProductService {
+    addProduct(value: Models.Product) {}
+    listProducts() {}
+  }
+}
+
+const users = new Models.User("Alice", "alice@example.com");
+const userService = new Services.UserServices();
+
+userService.registerUser(users);
+console.log(userService.getUser(1)); // Output: User{name: Alice, email: alice@example.com}
+
+const products = new Models.Product("Laptop", 15000000);
+const productService = new Services.ProductService();
+
+productService.addProduct(products);
+console.log(productService.listProducts()); // Output: [Product{ name: Laptop, price: 15000000 }]
+
+// soal 28
+interface Chaining {
+  select(...fields: string[]): this;
+  where(condition: string): this;
+  orderBy(field: string, direction: "asc" | "desc"): this;
+  limit(n: number): this;
+  build(): string;
+}
+
+class QueryBuilder implements Chaining {
+  orderBy(field: string, direction: "asc" | "desc"): this {
+    return this;
+  }
+  select(...fields: string[]): this {
+    return this;
+  }
+  where(condition: string): this {
+    return this;
+  }
+  limit(n: number): this {
+    return this;
+  }
+  build(): string {
+    return `${this.select}, ${this.where}, ${this.orderBy} ${this.limit}`;
+  }
+}
+
+const query = new QueryBuilder()
+  .select("id", "name", "email")
+  .where("age > 18")
+  .orderBy("name", "asc")
+  .limit(10)
+  .build();
+
+console.log(query);
+// Output: SELECT id, name, email WHERE age > 18 ORDER BY name asc LIMIT 10
+
+// soal 29
