@@ -1,8 +1,8 @@
 # UJIAN AKHIR KELULUSAN
 ## Mata Kuliah: TypeScript Object Oriented Programming
 ### Dosen: Eko Kurniawan Khannedy
-**Nama Peserta:** ________________  
-**Tanggal:** ________________  
+**Nama Peserta:** Jordan Theovandy  
+**Tanggal:** 29 Januari 2026
 **Waktu:** 150 Menit  
 **Passing Grade:** 70%
 
