@@ -796,24 +796,60 @@ console.log(invalid); // Output: null
 // repo.validateId(1); // Error: validateId is protected
 
 // soal 26
-// class Shapees{
-//   static create(type: string, ...args): number{
-//     return 0;
-//     getArea(){
-//       return 0;
-//     }
-//   }
+class Shapees {
+  static create(type: string, ...args: any[]): Shapees {
+    if (type.toLowerCase() === "circle") {
+      return new Circlees(args[0]);
+    } else if (type.toLowerCase() === "square") {
+      return new Squares(args[0]);
+    } else {
+      return new Trianglees(args[0], args[1]);
+    }
+  }
 
-// }
+  getArea(): number {
+    return 0;
+  }
+}
 
-// const circles = Shapees.create("circle", 10);
-// console.log(circles.getArea());  // Output: 314.16 (atau ~314)
+class Circlees extends Shapees {
+  constructor(public value: number) {
+    super();
+  }
+  getArea(): number {
+    return (22 / 7) * this.value * this.value;
+  }
+}
 
-// const squares = Shapees.create("square", 5);
-// console.log(squares.getArea());  // Output: 25
+class Squares extends Shapees {
+  constructor(public value: number) {
+    super();
+  }
+  getArea(): number {
+    return this.value * this.value;
+  }
+}
 
-// const triangles = Shapees.create("triangle", 10, 8);
-// console.log(triangles.getArea()); // Output: 40
+class Trianglees extends Shapees {
+  constructor(
+    public value1: number,
+    public value2: number,
+  ) {
+    super();
+  }
+  getArea(): number {
+    return 0.5 * this.value1 * this.value2;
+  }
+}
+
+const circles = Shapees.create("circle", 10);
+console.log(circles.getArea()); // Output: 314.16 (atau ~314)
+
+const squares = Shapees.create("square", 5);
+console.log(squares.getArea()); // Output: 25
+
+const triangles = Shapees.create("triangle", 10, 8);
+console.log(triangles.getArea()); // Output: 40
 
 // soal 27
 namespace Models {
@@ -834,15 +870,33 @@ namespace Models {
 
 namespace Services {
   export class UserServices {
-    registerUser(value: Models.User) {}
+    private users: Models.User[] = [];
+    registerUser(value: Models.User) {
+      users.name = value.name;
+      users.email = value.email;
+    }
     getUser(id: number): object {
-      return {};
+      return {
+        name: users.name,
+        email: users.email,
+      };
     }
   }
 
   export class ProductService {
-    addProduct(value: Models.Product) {}
-    listProducts() {}
+    private products: Models.Product[] = [];
+    addProduct(value: Models.Product) {
+      products.name = value.name;
+      products.price = value.price;
+    }
+    listProducts(): object[] {
+      return [
+        {
+          name: product.name,
+          price: product.price,
+        },
+      ];
+    }
   }
 }
 
@@ -868,20 +922,28 @@ interface Chaining {
 }
 
 class QueryBuilder implements Chaining {
-  orderBy(field: string, direction: "asc" | "desc"): this {
-    return this;
-  }
+  private _select: string[] = [];
+  private _where: string = "";
+  private _orderBy: string[] = [];
+  private _limit: number = 0;
   select(...fields: string[]): this {
+    this._select = fields;
     return this;
   }
   where(condition: string): this {
+    this._where = condition;
+    return this;
+  }
+  orderBy(field: string, direction: "asc" | "desc"): this {
+    this._orderBy = [field + " " + direction];
     return this;
   }
   limit(n: number): this {
+    this._limit = n;
     return this;
   }
   build(): string {
-    return `${this.select}, ${this.where}, ${this.orderBy} ${this.limit}`;
+    return `SELECT ${this._select.join(", ")} WHERE ${this._where} ORDER BY ${this._orderBy} LIMIT ${this._limit}`;
   }
 }
 
@@ -896,3 +958,217 @@ console.log(query);
 // Output: SELECT id, name, email WHERE age > 18 ORDER BY name asc LIMIT 10
 
 // soal 29
+class Repositoryy<T> {
+  private _items: any[] = [];
+  add(item: any): void {
+    this._items.push(item);
+  }
+  getAll(): any[] {
+    return this._items;
+  }
+  getById(id: number): any {
+    return this._items.find((item) => item.id === id);
+  }
+  update(id: number, item: any): void {
+    for (let i = 0; i < this._items.length; i++) {
+      if (i === id) {
+        const index = this._items.findIndex((it) => it.id === id);
+        this._items[index];
+      }
+    }
+  }
+  delete(id: number): void {
+    this._items = this._items.filter((it) => it.id !== id);
+  }
+}
+
+const userRepo = new Repositoryy();
+userRepo.add({ id: 1, name: "Alice" });
+userRepo.add({ id: 2, name: "Bob" });
+
+console.log(userRepo.getAll().length); // Output: 2
+console.log(userRepo.getById(1)); // Output: { id: 1, name: "Alice" }
+
+userRepo.update(1, { id: 1, name: "Alice Updated" });
+console.log(userRepo.getById(1)); // Output: { id: 1, name: "Alice Updated" }
+
+userRepo.delete(2);
+console.log(userRepo.getAll().length); // Output: 1
+
+// soal 30
+namespace Company2 {
+  export abstract class Person2 {
+    constructor(
+      protected id: number,
+      protected name: string,
+      protected email: string,
+    ) {}
+    abstract getRole(): string;
+    getInfo(): string {
+      return `ID:${this.id}, Name: ${this.name}, Email: ${this.email}`;
+    }
+  }
+
+  export class Employee2 extends Person2 {
+    constructor(
+      id: number,
+      name: string,
+      email: string,
+      public salary: number,
+      public department: string,
+    ) {
+      super(id, name, email);
+    }
+    getRole(): string {
+      return "Employee";
+    }
+    calculateBonus(): number {
+      return this.salary * 0.1;
+    }
+    getDetails() {
+      return this.getInfo() + this.salary + this.department;
+    }
+  }
+
+  export class Manager2 extends Employee2 {
+    constructor(
+      id: number,
+      name: string,
+      email: string,
+      salary: number,
+      department: string,
+      public teamSize: number,
+    ) {
+      super(id, name, email, salary, department);
+    }
+    calculateBonus(): number {
+      return this.salary * 0.2;
+    }
+    getRole(): string {
+      return "Manager";
+    }
+    getTeamInfo() {
+      return super.getDetails() + `Manages team of ${this.teamSize} people`;
+    }
+  }
+
+  export class Director2 extends Manager2 {
+    constructor(
+      id: number,
+      name: string,
+      email: string,
+      salary: number,
+      department: string,
+      teamSize: number,
+      public budget: number,
+    ) {
+      super(id, name, email, salary, department, teamSize);
+    }
+    calculateBonus(): number {
+      return this.salary * 0.3;
+    }
+    getRole(): string {
+      return "Director";
+    }
+  }
+
+  interface Manageable {
+    addMember(person: Person2): void;
+    removeMember(id: number): void;
+    getMembers(): Person2[];
+  }
+
+  export class Department2 implements Manageable {
+    members: Person2[] = [];
+    constructor(public name: string) {}
+    addMember(person: Person2): void {
+      this.members.push(person);
+    }
+    getMembers(): Person2[] {
+      return this.members;
+    }
+    removeMember(id: number): void {}
+    getTotalBonus() {}
+    getDepartmentInfo() {
+      return `${this.name} Department has ${this.members.length} members`;
+    }
+  }
+}
+
+// Create objects
+const emp1 = new Company2.Employee2(
+  1,
+  "Alice",
+  "alice@company.com",
+  50000000,
+  "Engineering",
+);
+const emp2 = new Company2.Employee2(
+  2,
+  "Bob",
+  "bob@company.com",
+  40000000,
+  "Engineering",
+);
+const mgr2 = new Company2.Manager2(
+  3,
+  "Carol",
+  "carol@company.com",
+  100000000,
+  "Engineering",
+  5,
+);
+const dir2 = new Company2.Director2(
+  4,
+  "David",
+  "david@company.com",
+  200000000,
+  "Engineering",
+  20,
+  1000000000,
+);
+
+// Create department
+const engDept = new Company2.Department2("Engineering");
+engDept.addMember(emp1);
+engDept.addMember(emp2);
+engDept.addMember(mgr2);
+engDept.addMember(dir2);
+
+// Test polymorphism
+const people: Company2.Person2[] = [emp1, emp2, mgr2, dir2];
+people.forEach((p) => {
+  console.log(`${p.getInfo()} - Role: ${p.getRole()}`);
+});
+
+// Test department
+console.log(engDept.getDepartmentInfo());
+// Output: Engineering Department has 4 members
+
+console.log(`Total Bonus: Rp${engDept.getTotalBonus()}`);
+// Output: Total Bonus: Rp125000000 (5M + 4M + 20M + 60M)
+
+// Test instanceof
+people.forEach((p) => {
+  if (p instanceof Company2.Director2) {
+    console.log(`${p.name} is a Director with budget: ${p.budget}`);
+  } else if (p instanceof Company2.Manager2) {
+    console.log(`${p.name} is a Manager with team of ${p.teamSize}`);
+  } else {
+    console.log(`${p.name} is an Employee`);
+  }
+});
+
+// Test error handling
+try {
+  const invalidEmp = new Company2.Employee2(
+    0,
+    "Invalid",
+    "invalid@company.com",
+    0,
+    "",
+  );
+  // Should validate that id > 0, salary > 0, etc.
+} catch (e: any) {
+  console.error(`Error: ${e.message}`);
+}
